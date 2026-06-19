@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Лучший мем</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(145deg, #f5f7fa 0%, #e9edf5 100%);
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+            height: 96vh;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 12px 20px 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            text-align: center;
+        }
+        h1 {
+            font-weight: 700;
+            font-size: 2rem;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+            margin-bottom: 2px;
+        }
+        .subtitle {
+            color: #475569;
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+        .battle {
+            display: flex;
+            flex: 1;
+            gap: 16px;
+            min-height: 0;
+        }
+        .block {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: white;
+            border-radius: 24px;
+            padding: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+            border: 2px solid transparent;
+            justify-content: center;
+            align-items: center;
+        }
+        .block:hover {
+            transform: scale(1.01);
+            box-shadow: 0 20px 30px -8px rgba(0, 0, 0, 0.15);
+            border-color: #818cf8;
+        }
+        .block:active {
+            transform: scale(0.97);
+        }
+        .block .image-wrapper {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .block img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            pointer-events: none;
+        }
+        .block .label {
+            display: none;
+        }
+        .info {
+            margin-top: 12px;
+            font-size: 1rem;
+            color: #1e293b;
+            padding: 8px 24px;
+            background: #f1f5f9;
+            border-radius: 60px;
+            display: inline-block;
+            font-weight: 500;
+            align-self: center;
+        }
+        .winner {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            background: #dbeafe;
+            border-radius: 28px;
+            animation: fadeUp 0.5s ease;
+            flex-direction: column;
+            align-items: center;
+            flex: 1; /* занимает всё свободное место */
+            justify-content: center;
+        }
+        .winner.show {
+            display: flex;
+        }
+        .winner h2 {
+            font-size: 1.8rem;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+        }
+        .winner .meme-photo {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            flex: 1; /* растягиваем на всю высоту */
+            align-items: center;
+        }
+        .winner .meme-photo img {
+            max-width: 45%;        /* увеличенная ширина */
+            max-height: 55vh;      /* увеличенная высота */
+            object-fit: contain;
+            border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            flex: 0 1 auto;
+        }
+        .winner p {
+            margin-top: 12px;
+            font-size: 1.1rem;
+            color: #1e293b;
+        }
+        .restart-btn {
+            margin-top: 16px;
+            background: #0b7e4b;
+            color: white;
+            border: none;
+            padding: 12px 36px;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(11, 126, 75, 0.3);
+        }
+        .restart-btn:hover {
+            background: #0a6a3f;
+            transform: scale(1.02);
+        }
+        .restart-btn:active {
+            transform: scale(0.96);
+        }
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 700px) {
+            .container { padding: 8px 12px 12px; border-radius: 20px; }
+            h1 { font-size: 1.6rem; }
+            .subtitle { font-size: 0.9rem; }
+            .battle { gap: 10px; flex-direction: column; }
+            .block { padding: 6px; }
+            .block .image-wrapper { min-height: 100px; }
+            .winner .meme-photo img {
+                max-width: 90%;
+                max-height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <h1>🏆 Повтори мем</h1>
+    <p class="subtitle">Разыгрываем банк</p>
+
+    <div class="battle" id="battleContainer">
+        <div class="block" id="leftBlock">
+            <div class="image-wrapper"><img id="leftMeme" src="" alt="Мем" /></div>
+            <div class="image-wrapper"><img id="leftPhoto" src="" alt="Фото" /></div>
+        </div>
+        <div class="block" id="rightBlock">
+            <div class="image-wrapper"><img id="rightMeme" src="" alt="Мем" /></div>
+            <div class="image-wrapper"><img id="rightPhoto" src="" alt="Фото" /></div>
+        </div>
+    </div>
+
+    <div class="info" id="info">Кликните по блоку, который смешнее</div>
+
+    <div class="winner" id="winner">
+        <h2>🎉 Победитель</h2>
+        <div class="meme-photo">
+            <img id="winnerMeme" src="" alt="Мем-победитель" />
+            <img id="winnerPhoto" src="" alt="Фото-победитель" />
+        </div>
+        <p id="winnerText">Абсолютный чемпион!</p>
+        <button class="restart-btn" id="restartBtn">Играть снова</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ------------------------------------------------------------
+        // 1. МАССИВ БЛОКОВ: { meme: URL, photo: URL }
+        // ------------------------------------------------------------
+        const blocks = [
+            {
+                meme: 'https://i.ibb.co/5WbBM0ct/image.jpg', //оргия
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/MyYBG1p5/image.jpg', //красная кнопка
+                photo: 'https://i.ibb.co/pjDP14SP/IMG-7687.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/ksfKQvzn/image.jpg', //стикер плачет
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/WvS4g6MT/2.jpg', //2 кота
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/7tF03YJB/image.jpg', //кот а
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/7dwGb7WH/image.jpg', //лягушка плачет
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/s9h3hWNp/image.jpg', //тиньков
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/zVMtNq2R/image.jpg', //ковбои
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+
+            {
+                meme: 'https://i.ibb.co/xSdgsN4f/image.jpg', //Жириновский
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/PSCsMYY/image.jpg', //птица
+                photo: 'https://i.ibb.co/BVtT5KY7/IMG-7779.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/zVswdYJN/image.jpg', //кот ауф
+                photo: 'https://i.ibb.co/HLqqkp2M/IMG-7717.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/VWW4YnNj/image.jpg', //парень обернулся
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/1GgTncpG/image.jpg', //шелби платно
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/5t9CqC2/image.jpg', //заставляет задуматься
+                photo: 'https://i.ibb.co/tp6GsFbw/IMG-7768.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/60tMkChF/2.jpg', //джим керри
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+
+            {
+                meme: 'https://i.ibb.co/VcMmMkJY/image.jpg', //офис
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/V0Q97rL7/image.jpg', //кролик
+                photo: 'https://i.ibb.co/KcwCwqRS/IMG-7726.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/YgVCPyb/image.jpg', //работяга
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/3Y5B91PF/image.jpg', //девочка фыркает
+                photo: 'https://i.ibb.co/tpxRgx31/IMG-7700.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/s9Ky5jPg/image.jpg', //кот и телки
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/bRY6xvMH/image.jpg', //ты крыса
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/ksBQb86c/image.jpg', //Ким Чен Ын
+                photo: 'https://i.ibb.co/C3jcbSpT/IMG-7753.jpg'
+            },
+
+            {
+                meme: 'https://i.ibb.co/MrZs68g/image.jpg', //трамп
+                photo: 'https://i.ibb.co/bRGSqmp9/IMG-7736.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/1fqhCf7P/image.jpg', //шаман
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/8LRy72Mh/image.jpg', //джордан
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/dszRyJDS/image.jpg', //блонди с грудью
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/4csVXvd/image.jpg', //с бородой и языком
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/v4qL1XqH/image.jpg', //ты никогда не задумывался
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/ns9jVTm0/image.jpg', //паук
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+
+            {
+                meme: 'https://i.ibb.co/XZKKd2Kb/image.jpg', //шрек и брац
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/CKdrq6Xx/image.jpg', //рис с красным огнем
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/JwPsty0V/image.jpg', //обезьяна
+                photo: 'https://i.ibb.co/jkzX8dpb/IMG-7705.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/Pv3KNG6x/image.jpg', //грю
+                photo: 'https://i.ibb.co/xt4gfkVB/IMG-7786.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/JjzgcSGp/image.jpg', //с бородой
+                photo: 'https://i.ibb.co/hJyf6DYX/IMG-7745.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/1GxXbnmX/image.jpg', //Раиса Васильевна
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+            {
+                meme: 'https://i.ibb.co/QFQZy623/image.jpg', //ты больше не армянин
+                photo: 'https://i.ibb.co/hJKVnzBp/german-beer.jpg'
+            },
+        ];
+
+        // ------------------------------------------------------------
+        // 2. DOM-элементы
+        // ------------------------------------------------------------
+        const leftMeme = document.getElementById('leftMeme');
+        const leftPhoto = document.getElementById('leftPhoto');
+        const rightMeme = document.getElementById('rightMeme');
+        const rightPhoto = document.getElementById('rightPhoto');
+        const leftBlock = document.getElementById('leftBlock');
+        const rightBlock = document.getElementById('rightBlock');
+        const battleContainer = document.getElementById('battleContainer');
+        const infoEl = document.getElementById('info');
+        const winnerBlock = document.getElementById('winner');
+        const winnerMeme = document.getElementById('winnerMeme');
+        const winnerPhoto = document.getElementById('winnerPhoto');
+        const winnerText = document.getElementById('winnerText');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // ------------------------------------------------------------
+        // 3. Состояние игры
+        // ------------------------------------------------------------
+        let gameOrder = [];
+        let champion = null;
+        let championSide = 'left';
+        let nextIndex = 0;
+        let gameActive = false;
+
+        // ------------------------------------------------------------
+        // 4. Вспомогательные функции
+        // ------------------------------------------------------------
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function showWinner(block) {
+            gameActive = false;
+            winnerMeme.src = block.meme;
+            winnerPhoto.src = block.photo;
+            winnerText.textContent = 'Этот блок — абсолютный чемпион!';
+            winnerBlock.classList.add('show');
+            winnerBlock.style.display = 'flex';
+            infoEl.textContent = 'Игра завершена!';
+            battleContainer.style.display = 'none';
+            leftBlock.style.display = 'none';
+            rightBlock.style.display = 'none';
+            leftMeme.src = '';
+            leftPhoto.src = '';
+            rightMeme.src = '';
+            rightPhoto.src = '';
+            leftBlock.style.cursor = 'default';
+            rightBlock.style.cursor = 'default';
+        }
+
+        function updateBattle() {
+            if (!gameActive) return;
+
+            if (nextIndex >= gameOrder.length) {
+                showWinner(champion);
+                return;
+            }
+
+            const challenger = gameOrder[nextIndex];
+
+            if (championSide === 'left') {
+                leftMeme.src = champion.meme;
+                leftPhoto.src = champion.photo;
+                rightMeme.src = challenger.meme;
+                rightPhoto.src = challenger.photo;
+            } else {
+                leftMeme.src = challenger.meme;
+                leftPhoto.src = challenger.photo;
+                rightMeme.src = champion.meme;
+                rightPhoto.src = champion.photo;
+            }
+
+            infoEl.textContent = 'Кликните по блоку, который смешнее';
+        }
+
+        // ------------------------------------------------------------
+        // 5. Логика выбора блока
+        // ------------------------------------------------------------
+        function chooseSide(side) {
+            if (!gameActive) return;
+
+            if (side === 'left') {
+                if (championSide !== 'left') {
+                    champion = {
+                        meme: leftMeme.src,
+                        photo: leftPhoto.src
+                    };
+                    championSide = 'left';
+                }
+            } else {
+                if (championSide !== 'right') {
+                    champion = {
+                        meme: rightMeme.src,
+                        photo: rightPhoto.src
+                    };
+                    championSide = 'right';
+                }
+            }
+
+            nextIndex++;
+            updateBattle();
+        }
+
+        // ------------------------------------------------------------
+        // 6. Запуск новой игры
+        // ------------------------------------------------------------
+        function startGame() {
+            if (blocks.length === 0) {
+                infoEl.textContent = 'Добавьте блоки в массив blocks!';
+                return;
+            }
+
+            gameOrder = shuffleArray([...blocks]);
+
+            if (gameOrder.length === 1) {
+                showWinner(gameOrder[0]);
+                return;
+            }
+
+            champion = gameOrder[0];
+            championSide = 'left';
+            nextIndex = 1;
+
+            gameActive = true;
+            winnerBlock.classList.remove('show');
+            winnerBlock.style.display = 'none';
+            battleContainer.style.display = 'flex';
+            leftBlock.style.display = 'flex';
+            rightBlock.style.display = 'flex';
+            leftBlock.style.cursor = 'pointer';
+            rightBlock.style.cursor = 'pointer';
+
+            updateBattle();
+        }
+
+        // ------------------------------------------------------------
+        // 7. Обработчики событий
+        // ------------------------------------------------------------
+        leftBlock.addEventListener('click', function(e) {
+            if (gameActive) chooseSide('left');
+        });
+
+        rightBlock.addEventListener('click', function(e) {
+            if (gameActive) chooseSide('right');
+        });
+
+        restartBtn.addEventListener('click', startGame);
+
+        // ------------------------------------------------------------
+        // 8. Старт
+        // ------------------------------------------------------------
+        startGame();
+    })();
+</script>
+</body>
+</html>
